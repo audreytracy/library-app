@@ -110,8 +110,7 @@ public class InputComponents extends Component {
 
         @Override
         public void buttonReaction() throws SQLException {
-            refreshBooks(this.s.query("SELECT title, fname, lname, count(*) FROM book JOIN author ON book.author_id = author.author_id JOIN book_inventory ON book_inventory.book_id = book.book_id\n" +
-"GROUP BY title, fname, lname; WHERE lower(title) = '" + textField.getText() + "';"));
+            refreshBooks(this.s.query("SELECT title, fname, lname, count(*) FROM book JOIN author ON book.author_id = author.author_id JOIN book_inventory ON book_inventory.book_id = book.book_id GROUP BY title, fname, lname HAVING lower(title) = '" + textField.getText() + "';"));
         }
     }
 
