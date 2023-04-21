@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -16,7 +17,7 @@ public class SQLQueries {
         String url = "jdbc:postgresql://localhost:5432/";
         String user = "postgres";
         String password = "ahi7,$$";
-        String filePath = "C:\\Users\\Audrey\\Desktop\\Final_Project_366\\test.sql";
+        String filePath = new File("").getAbsolutePath()+"\\src\\sql\\test.sql";
         try {
             Class.forName("org.postgresql.Driver");
             Connection dbmk = DriverManager.getConnection(url, user, password);

@@ -110,7 +110,8 @@ public class InputComponents extends Component {
 
         @Override
         public void buttonReaction() throws SQLException {
-            refreshBooks(this.s.query("SELECT * FROM book WHERE lower(title) = '" + textField.getText() + "';"));
+            refreshBooks(this.s.query("SELECT title, fname, lname, count(*) FROM book JOIN author ON book.author_id = author.author_id JOIN book_inventory ON book_inventory.book_id = book.book_id\n" +
+"GROUP BY title, fname, lname; WHERE lower(title) = '" + textField.getText() + "';"));
         }
     }
 
@@ -197,7 +198,7 @@ public class InputComponents extends Component {
             super();
             this.cornerRadius = cornerRadius;
             this.setLayout(null);
-            addComponent(10, 15, 100, 120, "image", "C:\\Users\\Audrey\\Desktop\\Final_Project_366\\LibraryManagementSystem\\src\\images\\" + book.getID() + ".jpg");
+            addComponent(10, 15, 100, 120, "image", new File("").getAbsolutePath()+"\\src\\images\\" + book.getID() + ".jpg");
             addComponent(120, 20, 300, 20, "label", "<html><h3>" + book.getTitle() + "</h3></html>");
             addComponent(120, 40, 300, 20, "label", "<html><h4 style = \"color:green\">" + book.getAuthorID() + "</h4></html>");
             addComponent(120, 55, 300, 100, "label", book.getSummary());
