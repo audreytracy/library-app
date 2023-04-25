@@ -57,61 +57,66 @@ public class InputComponents extends Component {
 
     public class SearchPanel extends JScrollPane implements I {
 
-        private String[] form_data;
-//        private ResultSet rs;
-        private String set; // change to reflect selecting info about the selected dropdown
         JComboBox searchFilters;
         JTextField textField;
         SubmitFormButton button;
         SQLQueries s;
         JPanel panel;
+        String[] values = {"title", "lname", "genre", "1=1;--"};//, "date_added", "publication_date"};
+
 
         public SearchPanel(SQLQueries s) throws SQLException {
             super();
             this.s = s;
-            String[] filters = {"Title", "Author", "Genre", "Length", "Most Recent"};
-            setBounds(10, 10, 460, 460);
             this.panel = new JPanel();
             panel.setLayout(null);
-            this.searchFilters = new JComboBox(filters);
+            this.searchFilters = new JComboBox(new String[] {"Title", "Author", "Genre", "All"});
             searchFilters.setBounds(10, 10, 80, 20);
-            panel.add(searchFilters);
             this.textField = (JTextField) (new LoginTextField("search", false));
             textField.setBounds(100, 8, 250, 25);
-            panel.add(textField);
             this.button = new SubmitFormButton("Search", searchFilters, textField, this);
-            button.setBounds(360, 10, 70, 20);
-            panel.add(button);
-            panel.setPreferredSize(new Dimension(460, 800));
-
-            refreshBooks(s.query("SELECT * FROM book;"));
+            button.setBounds(360, 10, 75, 20);
+            buttonReaction();
+            //addStuff(s.query("SELECT * FROM book;"));
             setViewportView(panel);
-            form_data = new String[0];
         }
 
-        private void refreshBooks(ResultSet rs) throws SQLException {
+        private void refresh(ResultSet rs) throws SQLException {
             int count = 0;
             JPanel book;
-            rs = s.query("SELECT * FROM book");
+            panel.removeAll();
+            panel.add(this.textField);
+            panel.add(this.button);
+            panel.add(this.searchFilters);
+            
+            System.out.println(rs);
             while (rs.next()) {
                 System.out.println(rs.toString());
-                book = new BookListItem(10, new Book(rs.getInt("book_id"), rs.getString("title"), rs.getInt("author_id"), rs.getString("genre"), rs.getString("summary"), rs.getInt("pages")));
+                book = new BookListItem(10, new Book(rs.getInt("book_id"), rs.getString("title"), rs.getString("fname"), rs.getString("lname"), rs.getString("genre"), rs.getString("summary"), rs.getInt("pages")));
                 book.setBounds(10, 160 * count++ + 40, 460, 150);
                 panel.add(book);
             }
-            if (count > 3) {
-                panel.setPreferredSize(new Dimension(460, 210 * count));
+            if (count > 3) panel.setPreferredSize(new Dimension(460, 210 * count));
+            else if(count == 0){
+                JLabel label = new JLabel("no books found matching your search");
+                label.setBounds(110,160,300,30);
+                panel.add(label);
             }
-        }
-
-        public String[] getLoginInfo() {
-            return form_data;
+            repaint();
         }
 
         @Override
         public void buttonReaction() throws SQLException {
-            refreshBooks(this.s.query("SELECT title, fname, lname, count(*) FROM book JOIN author ON book.author_id = author.author_id JOIN book_inventory ON book_inventory.book_id = book.book_id GROUP BY title, fname, lname HAVING lower(title) = '" + textField.getText() + "';"));
+            String search = textField.getText().equals("search") ? "" : textField.getText();
+            //if(textField.getText().equals("search")) addStuff(this.s.query("SELECT * from book;"));
+            refresh(this.s.query("SELECT book.*, fname, lname, count(*) "
+                    + "FROM book JOIN author "
+                               + "ON book.author_id = author.author_id JOIN book_inventory "
+                               + "ON book_inventory.book_id = book.book_id "
+                               + "GROUP BY title, fname, lname, book.book_id, summary, pages, book.genre, book.author_id "
+                               + "HAVING lower("+values[searchFilters.getSelectedIndex()]+") LIKE '%" + search + "%';"));
         }
+        
     }
 
     private class LoginTextField extends JPasswordField {
@@ -146,7 +151,6 @@ public class InputComponents extends Component {
     }
 
     private interface I {
-
         public void buttonReaction() throws SQLException;
     }
 
@@ -181,12 +185,6 @@ public class InputComponents extends Component {
                 }
             });
         }
-
-        private void setFormData(String[] fd) {
-            System.out.println(form_data[0]);
-            InputComponents.this.formData = fd;
-            System.out.println(InputComponents.this.getFormData()[0]);
-        }
     }
 
     final class BookListItem extends JPanel {
@@ -197,9 +195,11 @@ public class InputComponents extends Component {
             super();
             this.cornerRadius = cornerRadius;
             this.setLayout(null);
-            addComponent(10, 15, 100, 120, "image", new File("").getAbsolutePath()+"\\src\\images\\" + book.getID() + ".jpg");
+//            JLabel label = new JLabel("<html><h3>" + book.getTitle() + "</h3></html>");
+//            label.setBounds(10,15,100,120);
+            addComponent(10, 15, 100, 120, "image", new File("").getAbsolutePath()+"\\src\\images\\" + book.getID() + ".png");
             addComponent(120, 20, 300, 20, "label", "<html><h3>" + book.getTitle() + "</h3></html>");
-            addComponent(120, 40, 300, 20, "label", "<html><h4 style = \"color:green\">" + book.getAuthorID() + "</h4></html>");
+            addComponent(120, 40, 300, 20, "label", "<html><h4>" + book.getAuthor() + "</h4></html>");
             addComponent(120, 55, 300, 100, "label", book.getSummary());
         }
 

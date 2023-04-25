@@ -35,6 +35,7 @@ public class SQLQueries {
                 if (line.endsWith(";")) {
                     stmt.execute(sb.toString());
                     sb = new StringBuilder();
+                    System.out.println("hsdiofsdfi");
                 }
             }
             this.stmt = stmt;
@@ -45,6 +46,10 @@ public class SQLQueries {
     
     public ResultSet query(String query) throws SQLException {
         return this.stmt.executeQuery(query);
+    }
+    
+    public ResultSet insert(String records) throws SQLException {
+        return this.stmt.executeQuery(records);
     }
     
     

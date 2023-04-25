@@ -3,7 +3,7 @@ import java.awt.*;
 import java.sql.SQLException;
 import javax.swing.*;
 
-public class TabDemo {
+public class LibraryApp {
 
     public void addComponentToPane(Container pane) {
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -28,10 +28,9 @@ public class TabDemo {
 
     private static void createAndShowGUI() {
         JFrame frame = new JFrame("TabDemo");
-        frame.setSize(550, 550);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        TabDemo demo = new TabDemo();
+        LibraryApp demo = new LibraryApp();
         demo.addComponentToPane(frame.getContentPane());
 
         frame.pack();
