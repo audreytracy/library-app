@@ -17,7 +17,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 /**
- *
+ * AccountPanel is JScrollPane object providing information about library user's holds & checked out books
  * @author Audrey
  */
 public class AccountPanel extends JScrollPane {
@@ -70,7 +70,7 @@ public class AccountPanel extends JScrollPane {
                         rs = s.query("SELECT count(*) FROM holds WHERE account_id = " + user_id);
                         rs.next();
                         int holds = rs.getInt("count");
-                        AccountSummaryItem a = new AccountSummaryItem(checked_out, overdue, holds);
+                        AccountPanelItem a = new AccountPanelItem(checked_out, overdue, holds);
                         a.setBounds(40, 110, 340, 100);
                         pane.add(a);
                         repaint();
@@ -89,7 +89,7 @@ public class AccountPanel extends JScrollPane {
                             int iu = rs.getInt("in_use_copies");
                             int t = rs.getInt("total_copies");
                             int avail = t - iu;
-                            AccountSummaryItem a = new AccountSummaryItem(rs.getInt("book_id"), rs.getString("title"), rs.getString("fname"), rs.getString("lname"), rs.getString("time_placed"), rs.getInt("hold_pos"), rs.getInt("num_copies"), avail, user_id);
+                            AccountPanelItem a = new AccountPanelItem(rs.getInt("book_id"), rs.getString("title"), rs.getString("fname"), rs.getString("lname"), rs.getString("time_placed"), rs.getInt("hold_pos"), rs.getInt("num_copies"), avail, user_id);
                             a.setBounds(40, y_pos, 340, 100);
                             pane.add(a);
                         }
@@ -106,7 +106,7 @@ public class AccountPanel extends JScrollPane {
                         int y_pos = 0;
                         while (rs.next()) {
                             y_pos += 110;
-                            AccountSummaryItem a = new AccountSummaryItem(rs.getInt("checkout_id"), rs.getString("title"), rs.getString("fname"), rs.getString("lname"), rs.getString("date_checked_out"), rs.getString("date_returned"));
+                            AccountPanelItem a = new AccountPanelItem(rs.getInt("checkout_id"), rs.getString("title"), rs.getString("fname"), rs.getString("lname"), rs.getString("date_checked_out"), rs.getString("date_returned"), rs.getTimestamp("due_date"));
                             a.setBounds(40, y_pos, 340, 100);
                             pane.add(a);
                         }

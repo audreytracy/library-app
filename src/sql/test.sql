@@ -180,7 +180,7 @@ INSERT INTO account (fname, lname, phone, pin, username) VALUES
 INSERT INTO holds (book_id, account_id, time_placed) VALUES 
 (1, 1, '2023-05-03 15:30:45'),  -- all three copies in use
 (1, 2, '2023-05-02 15:30:45'), 
-(1, 3, '2023-05-01 15:30:45'), 
+(2, 3, '2023-05-01 15:30:45'), 
 (3, 1, '2023-05-02 11:20:10'),  -- copy in use
 (3, 3, '2023-05-03 19:45:30'), 
 (14, 2, '2023-05-03 19:45:30'),  -- 2 copies in use
@@ -208,7 +208,7 @@ INSERT INTO borrowing_history(book_id, account_id, date_checked_out, date_return
 (8, 2, '2018-05-15', '2018-05-21'),
 (11, 1, '2017-02-14', '2017-02-21'),
 (3, 2, '2018-11-10', '2018-11-18'),
-(3, 1, '2023-03-21', NULL), -- not returned yet (copy of 3 in use)
+(3, 2, '2023-03-21', NULL), -- not returned yet (copy of 3 in use)
 (19, 3, '2022-09-08', NULL), -- not returned yet (copy of 19 in use)
 (11, 1, '2016-12-01', '2017-01-27'), -- overdue
 (17, 2, '2020-03-20', '2020-03-28'),

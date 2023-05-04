@@ -52,6 +52,13 @@ public class CheckoutHold extends JPanel {
         JPasswordField pin_field = new LoginTextField("****");
         // password_field.
         pin_field.setBounds(200, 65, 100, 20);
+        pin_field.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                CheckoutHold.this.remove(warning);
+                CheckoutHold.this.repaint();
+            }
+        });
         username_field.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -84,6 +91,27 @@ public class CheckoutHold extends JPanel {
                             ResultSet user = q.query("SELECT account_id FROM account WHERE pin = " + pin + " AND username = '" + username + "';");
                             user.next();
                             int user_id = user.getInt("account_id");
+                            int num_holds_on_book = 0;
+                            boolean thrown = false;
+                            try {
+                                user = q.query("SELECT count(*) FROM holds WHERE book_id = " + id);
+                                user.next();
+                                num_holds_on_book = user.getInt("count");
+                                user = q.query("SELECT time_first_on_list FROM holds WHERE account_id = " + user_id + " AND book_id = " + id);
+                                user.next();
+                                boolean isFirst = user.getString("time_first_on_list") != null;
+                                if (num_holds_on_book > 0 && !isFirst) {
+                                    throw new SQLException();
+                                }
+                            } catch (SQLException s) {
+                                thrown = true;
+                                s.printStackTrace();
+                                warning = new JLabel("<html><h4 style=\"color:red;\">there are holds on this book</h4></html>");
+                                warning.setBounds(217, 130, 100, 20);
+                                CheckoutHold.this.add(warning);
+                                CheckoutHold.this.repaint();
+                            }
+if(!thrown){
                             q.update("INSERT INTO borrowing_history (book_id, account_id) VALUES (" + id + ", " + user_id + ");");
                             CheckoutHold.this.remove(checkout);
                             JLabel success = new JLabel("<html><h4 style = \"color:green\">checked out</h4></html>");
@@ -94,13 +122,14 @@ public class CheckoutHold extends JPanel {
                             } catch (SQLException sqle) {
                                 sqle.printStackTrace();
                             }
-                            CheckoutHold.this.repaint();
+                            CheckoutHold.this.repaint();}
                         } catch (SQLException sqle) {
                             warning = new JLabel("<html><h4 style=\"color:red;\">invalid login</h4></html>");
                             warning.setBounds(217, 130, 100, 20);
                             CheckoutHold.this.add(warning);
                             CheckoutHold.this.repaint();
                         }
+
                     }
                 });
                 add(checkout);
@@ -128,7 +157,7 @@ public class CheckoutHold extends JPanel {
                                 info.next();
                                 int total = info.getInt("num_copies");
                                 if (num_user_checked_out == total) {
-                                    throw new IllegalStateException("THROWN FROM LN111");
+                                    throw new IllegalStateException("THROWN FROM LN138");
                                 }
                                 q.update("INSERT INTO holds (book_id, account_id) VALUES (" + id + ", " + user_id + ");");
                                 CheckoutHold.this.remove(place_hold);
@@ -143,7 +172,6 @@ public class CheckoutHold extends JPanel {
                                 CheckoutHold.this.add(warning);
                                 CheckoutHold.this.repaint();
                             } catch (SQLException sqle) { // exception thrown if unique PK constraint violated (already have hold on book)
-                                sqle.printStackTrace();
                                 CheckoutHold.this.remove(place_hold);
                                 warning = new JLabel("<html><h4 style = \"color:red\">You already have a hold on this book</h4></html>");
                                 warning.setBounds(170, 125, 220, 20);
@@ -151,8 +179,6 @@ public class CheckoutHold extends JPanel {
                                 CheckoutHold.this.repaint();
                             }
                         } catch (SQLException sqle) { // thrown if user doesn't exist or login is wrong format
-                            sqle.printStackTrace();
-
                             warning = new JLabel("<html><h4 style=\"color:red;\">invalid login</h4></html>");
                             warning.setBounds(217, 130, 100, 20);
                             CheckoutHold.this.add(warning);

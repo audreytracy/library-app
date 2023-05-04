@@ -12,7 +12,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 /**
- *
+ * SearchPanel is a JScrollPane that displays the library's books and provides basic search filtering
+ * capabilities (search by title, author last name, genre)
+ * Search bar input is passed into a PreparedStatement to protect agains SQL injection
  * @author Audrey
  */
 public class SearchPanel extends JScrollPane {
@@ -22,7 +24,7 @@ public class SearchPanel extends JScrollPane {
     JButton button;
     SQLQueries s;
     JPanel panel;
-    String[] values = {"title", "lname", "genre"};//, "date_added", "publication_date"};
+    String[] values = {"title", "lname", "genre"}; // contains table column names corresponding with text in filters dropdown
 
     public SearchPanel(SQLQueries s) throws SQLException {
         super();
@@ -35,11 +37,12 @@ public class SearchPanel extends JScrollPane {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    if (searchFilters.getSelectedItem().equals("See All")) {
+                    if(searchFilters.getSelectedItem().equals("See All")) {
                         refresh(SearchPanel.this.s.query("SELECT * FROM book_list_data;"));
                         searchFilters.setSelectedItem("Title");
                     }
-                } catch (SQLException sqle) {
+                }
+                catch (SQLException sqle) {
                     sqle.printStackTrace();
                 }
             }
@@ -56,7 +59,8 @@ public class SearchPanel extends JScrollPane {
                     String search = textField.getText().equals("search") ? "" : textField.getText();
                     refresh(s.preparedQuery("SELECT * FROM book_list_data WHERE lower(" + values[searchFilters.getSelectedIndex()] + ") LIKE ?;", "%" + search + "%"));
 
-                } catch (SQLException sqle) {
+                }
+                catch (SQLException sqle) {
                     sqle.printStackTrace();
                 }
             }
