@@ -10,7 +10,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -46,7 +45,6 @@ final class BookListItem extends JPanel {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     JTabbedPane tabbedPane = (JTabbedPane) SwingUtilities.getAncestorOfClass(JTabbedPane.class, BookListItem.this);
-                    //int selectedIndex = tabbedPane.getSelectedIndex();
                     int prev_details_index = tabbedPane.indexOfTab("Details");
                     if(prev_details_index == -1){ // if details tab not open yet
                         tabbedPane.addTab("Details", new JPanel());

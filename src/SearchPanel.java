@@ -54,7 +54,7 @@ public class SearchPanel extends JScrollPane {
                 try {
                     SQLQueries s = SQLQueries.getInstance();
                     String search = textField.getText().equals("search") ? "" : textField.getText();
-                    refresh(s.query("SELECT * FROM book_list_data WHERE lower(" + values[searchFilters.getSelectedIndex()] + ") LIKE '%" + search + "%';"));
+                    refresh(s.preparedQuery("SELECT * FROM book_list_data WHERE lower(" + values[searchFilters.getSelectedIndex()] + ") LIKE ?;", "%" + search + "%"));
 
                 } catch (SQLException sqle) {
                     sqle.printStackTrace();

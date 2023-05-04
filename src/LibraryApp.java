@@ -10,14 +10,12 @@ public class LibraryApp {
     public void addComponentToPane(Container pane) {
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setSize(550, 550);
-
         
         AccountPanel ap = new AccountPanel();
         tabbedPane.addTab("Account", ap);
 
         SQLQueries s = SQLQueries.getInstance();
         try {
-            // InputComponents.SearchPanel browse = outer.new SearchPanel(s);
             SearchPanel browse = new SearchPanel(s);
             tabbedPane.addTab("Browse", browse);
 
@@ -27,7 +25,7 @@ public class LibraryApp {
     }
 
     private static void createAndShowGUI() {
-        JFrame frame = new JFrame("TabDemo");
+        JFrame frame = new JFrame("LibraryApp");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         LibraryApp demo = new LibraryApp();
@@ -39,29 +37,22 @@ public class LibraryApp {
 
     public static void main(String[] args) {
 
-
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 try{
-                    cleanHolds();
+                    SQLQueries s = SQLQueries.getInstance();
+                    s.query("DELETE FROM holds WHERE hold_expire < CURRENT_TIMESTAMP;");
                 }
                 catch(SQLException sqle){}
             }
-        }, 0, 60000 * 10); // 60000 ms per minute, run every 10 minutes
+        }, 0, 60000 * 60); // 60000 ms per minute, run every hour
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 createAndShowGUI();
             }
-        });
-        
+        }); 
     }
-    
-    public static void cleanHolds() throws SQLException{
-        SQLQueries s = SQLQueries.getInstance();
-        s.query("DELETE FROM holds WHERE hold_expire > CURRENT_TIMESTAMP;");
-    }
-
 }

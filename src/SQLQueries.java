@@ -8,10 +8,12 @@ import java.sql.Statement;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.PreparedStatement;
 
 public class SQLQueries {
 
     private Statement stmt;
+    Connection con;
     private static final SQLQueries SQL = new SQLQueries();
     private SQLQueries(){
         String url = "jdbc:postgresql://localhost:5432/";
@@ -25,7 +27,7 @@ public class SQLQueries {
             make.executeUpdate("DROP DATABASE IF EXISTS libraryapp;");
             make.executeUpdate("CREATE DATABASE libraryapp;");
             dbmk.close();
-            Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/libraryapp", user, password);
+            con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/libraryapp", user, password);
             Statement stmt = con.createStatement();
             BufferedReader reader = new BufferedReader(new FileReader(filePath));
             String line;
@@ -64,5 +66,18 @@ public class SQLQueries {
     
     public void update(String insert) throws SQLException {
         this.stmt.executeUpdate(insert);
+    }
+    
+    public ResultSet preparedQuery(String query, String arg) throws SQLException {
+            PreparedStatement pstmt = con.prepareStatement(query);
+            pstmt.setString(1, arg);
+            return pstmt.executeQuery();
+
+    }    
+    public ResultSet preparedQuery(String query, int arg1, String arg2) throws SQLException {
+            PreparedStatement pstmt = con.prepareStatement(query);
+            pstmt.setInt(1, arg1);
+            pstmt.setString(2, arg2);
+            return pstmt.executeQuery();
     }
 }

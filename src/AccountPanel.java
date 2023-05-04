@@ -28,8 +28,8 @@ public class AccountPanel extends JScrollPane {
     JLabel message;
     JButton logout;
     int user_id;
-    
-    public void refresh(){
+
+    public void refresh() {
         pane.repaint();
     }
 
@@ -42,8 +42,6 @@ public class AccountPanel extends JScrollPane {
         pane.setLayout(null);
         pane.add(warning);
 
-        
-        
         this.comboBox = new JComboBox(new String[]{"Summary", "My Holds", "Checkout History"});
         comboBox.setBounds(270, 80, 110, 20);
         comboBox.addActionListener(new ActionListener() {
@@ -73,7 +71,7 @@ public class AccountPanel extends JScrollPane {
                         rs.next();
                         int holds = rs.getInt("count");
                         AccountSummaryItem a = new AccountSummaryItem(checked_out, overdue, holds);
-                        a.setBounds(40,110,340,100);
+                        a.setBounds(40, 110, 340, 100);
                         pane.add(a);
                         repaint();
                     } else if (comboBox.getSelectedItem().equals("My Holds")) {
@@ -84,11 +82,14 @@ public class AccountPanel extends JScrollPane {
                         JLabel holds = new JLabel("<html><h2>My holds</h2></html>");
                         holds.setBounds(40, 80, 100, 25);
                         pane.add(holds);
-                        ResultSet rs = s.query("SELECT * FROM holds_data LEFT JOIN book ON holds_data.book_id = book.book_id LEFT JOIN author ON author.author_id = book.author_id WHERE account_id = " + user_id);
+                        ResultSet rs = s.query("SELECT * FROM holds_data LEFT JOIN book ON holds_data.book_id = book.book_id LEFT JOIN author ON author.author_id = book.author_id JOIN avail_copies_data ON avail_copies_data.book_id = holds_data.book_id WHERE account_id = " + user_id);
                         int y_pos = 0;
-                        while(rs.next()){
+                        while (rs.next()) {
                             y_pos += 110;
-                            AccountSummaryItem a = new AccountSummaryItem(rs.getInt("book_id"), rs.getString("title"), rs.getString("fname"), rs.getString("lname"), rs.getString("time_placed"), rs.getInt("hold_pos"),rs.getInt("num_copies"), user_id);
+                            int iu = rs.getInt("in_use_copies");
+                            int t = rs.getInt("total_copies");
+                            int avail = t - iu;
+                            AccountSummaryItem a = new AccountSummaryItem(rs.getInt("book_id"), rs.getString("title"), rs.getString("fname"), rs.getString("lname"), rs.getString("time_placed"), rs.getInt("hold_pos"), rs.getInt("num_copies"), avail, user_id);
                             a.setBounds(40, y_pos, 340, 100);
                             pane.add(a);
                         }
@@ -103,8 +104,7 @@ public class AccountPanel extends JScrollPane {
                         pane.add(chkt_hs);
                         ResultSet rs = s.query("SELECT * FROM book_list_data JOIN borrowing_history ON book_list_data.book_id = borrowing_history.book_id WHERE account_id = " + user_id);
                         int y_pos = 0;
-                        //System.out.println(checked_out);
-                        while(rs.next()){
+                        while (rs.next()) {
                             y_pos += 110;
                             AccountSummaryItem a = new AccountSummaryItem(rs.getInt("checkout_id"), rs.getString("title"), rs.getString("fname"), rs.getString("lname"), rs.getString("date_checked_out"), rs.getString("date_returned"));
                             a.setBounds(40, y_pos, 340, 100);
@@ -117,9 +117,9 @@ public class AccountPanel extends JScrollPane {
                 }
             }
         });
-        
+
         JLabel greeting = new JLabel("<html><h2>Sign in</h2><html>");
-        greeting.setBounds(50,10,300,30);
+        greeting.setBounds(50, 10, 300, 30);
         pane.add(greeting);
 
         JTextField username_field = (JTextField) (new LoginTextField("username", false));
@@ -159,19 +159,20 @@ public class AccountPanel extends JScrollPane {
                         throw new SQLException();
                     }
                     int pin = Integer.parseInt(p);
-                    ResultSet user = q.query("SELECT account_id FROM account WHERE pin = " + pin + " AND username = '" + username + "';");
+                    ResultSet user = q.preparedQuery("SELECT account_id FROM account WHERE pin = ? AND username = ?;", pin, username);
                     user.next();
                     user_id = user.getInt("account_id");
                     pane.removeAll();
-                    message = new JLabel("<html><h1>Hello, " + username +"</h1></html>");
-                    message.setBounds(40,30,3000,30);
+                    message = new JLabel("<html><h1>Hello, " + username + "</h1></html>");
+                    message.setBounds(40, 30, 3000, 30);
                     pane.add(message);
-                    
+
                     pane.add(comboBox);
                     pane.add(logout);
                     comboBox.selectWithKeyChar('s');
                     repaint();
                 } catch (SQLException sqle) {
+                    sqle.printStackTrace();
                     pane.remove(warning);
                     warning = new JLabel("<html><h4 style=\"color:red;\">invalid login</h4></html>");
                     warning.setBounds(50, 65, 100, 20);
@@ -180,20 +181,20 @@ public class AccountPanel extends JScrollPane {
                 }
             }
         });
-        
+
         logout = new JButton("logout");
-        logout.setBounds(365,10,70,20);
+        logout.setBounds(365, 10, 70, 20);
         logout.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JTabbedPane tabbedPane = (JTabbedPane) SwingUtilities.getAncestorOfClass(JTabbedPane.class, AccountPanel.this);
-                    int account_index = tabbedPane.indexOfTab("Account");
-                    AccountPanel ap = new AccountPanel();
-                    tabbedPane.setComponentAt(account_index,ap);
-                    tabbedPane.setSelectedComponent(ap); // switch to that tab
+                int account_index = tabbedPane.indexOfTab("Account");
+                AccountPanel ap = new AccountPanel();
+                tabbedPane.setComponentAt(account_index, ap);
+                tabbedPane.setSelectedComponent(ap); // switch to that tab
             }
         });
-       
+
         pane.add(login_button);
 
         pane.setPreferredSize(new Dimension(460, 110 * 90));

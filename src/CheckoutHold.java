@@ -6,7 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.JButton;
@@ -26,9 +25,9 @@ public class CheckoutHold extends JPanel {
     JLabel warning = new JLabel("invalid login");
 
     /**
-     * 
+     *
      * @param id
-     * @param isFromHolds 
+     * @param isFromHolds
      */
     public CheckoutHold(int id, boolean isFromHolds) {
         setLayout(null);
@@ -90,10 +89,9 @@ public class CheckoutHold extends JPanel {
                             JLabel success = new JLabel("<html><h4 style = \"color:green\">checked out</h4></html>");
                             success.setBounds(217, 125, 100, 20);
                             CheckoutHold.this.add(success);
-                            try{
+                            try {
                                 q.update("DELETE FROM holds WHERE book_id = " + id + " AND account_id = " + user_id); // remove hold once book checked out, if hold exists
-                            }
-                            catch(SQLException sqle){
+                            } catch (SQLException sqle) {
                                 sqle.printStackTrace();
                             }
                             CheckoutHold.this.repaint();
@@ -119,7 +117,7 @@ public class CheckoutHold extends JPanel {
                                 throw new SQLException();
                             }
                             int pin = Integer.parseInt(p);
-                            ResultSet user = q.query("SELECT account_id FROM account WHERE pin = " + pin + " AND username = '" + username + "';");
+                            ResultSet user = q.preparedQuery("SELECT account_id FROM account WHERE pin = ? AND username = ?;", pin, username);
                             user.next();
                             int user_id = user.getInt("account_id");
                             try {
@@ -141,7 +139,7 @@ public class CheckoutHold extends JPanel {
                             } catch (IllegalStateException ise) {
                                 CheckoutHold.this.remove(place_hold);
                                 warning = new JLabel("<html><h4 style = \"color:red\">Cannot place hold, you have all copies checked out</h4></html>");
-                                warning.setBounds(130, 125, 300, 20);
+                                warning.setBounds(150, 125, 150, 50);
                                 CheckoutHold.this.add(warning);
                                 CheckoutHold.this.repaint();
                             } catch (SQLException sqle) { // exception thrown if unique PK constraint violated (already have hold on book)
@@ -160,7 +158,6 @@ public class CheckoutHold extends JPanel {
                             CheckoutHold.this.add(warning);
                             CheckoutHold.this.repaint();
                         }
-
                     }
                 });
                 add(place_hold);
@@ -187,7 +184,4 @@ public class CheckoutHold extends JPanel {
             return false;
         }
     }
-
-
 }
-

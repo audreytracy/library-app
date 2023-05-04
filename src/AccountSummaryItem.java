@@ -4,15 +4,12 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import java.sql.SQLException;
-import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 
 /**
@@ -50,28 +47,27 @@ public class AccountSummaryItem extends JPanel {
         JLabel r = new JLabel("Returned:       " + ((return_date == null) ? "not returned" : return_date));
         r.setBounds(10, 70, 200, 20);
         add(r);
-        if(return_date == null){
+        if (return_date == null) {
             JButton return_book = new JButton("Return book");
-            return_book.setBounds(250,70,80,20);
+            return_book.setBounds(210, 70, 120, 20);
             return_book.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    SQLQueries s = SQLQueries.getInstance();
-                    s.update("UPDATE borrowing_history SET date_returned = CURRENT_DATE WHERE checkout_id = " + checkout_id);
-                    AccountPanel parent = (AccountPanel) SwingUtilities.getAncestorOfClass(JScrollPane.class, AccountSummaryItem.this);
-                    parent.comboBox.selectWithKeyChar('c');
-                } catch (SQLException sqle) {
-                    sqle.printStackTrace();
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        SQLQueries s = SQLQueries.getInstance();
+                        s.update("UPDATE borrowing_history SET date_returned = CURRENT_DATE WHERE checkout_id = " + checkout_id);
+                        AccountPanel parent = (AccountPanel) SwingUtilities.getAncestorOfClass(JScrollPane.class, AccountSummaryItem.this);
+                        parent.comboBox.selectWithKeyChar('c');
+                    } catch (SQLException sqle) {
+                        sqle.printStackTrace();
+                    }
                 }
-            }
-        });
+            });
             add(return_book);
         }
-        
     }
 
-    public AccountSummaryItem(int book_id, String title, String fname, String lname, String hold_placed, int pos_on_list, int copies, int user_id) {
+    public AccountSummaryItem(int book_id, String title, String fname, String lname, String hold_placed, int pos_on_list, int copies, int avail_copies, int user_id) {
         super();
         setLayout(null);
         JLabel t = new JLabel("<html><h3>" + title + "</h3></html>");
@@ -83,7 +79,7 @@ public class AccountSummaryItem extends JPanel {
         JLabel c = new JLabel("Hold placed: " + hold_placed);
         c.setBounds(10, 50, 200, 20);
         add(c);
-        JLabel p = new JLabel("Hold position: " + (pos_on_list+1) + " (on " + copies + ((copies == 1) ? " copy)" : " copies)"));
+        JLabel p = new JLabel("Hold position: " + (pos_on_list + 1) + " (on " + copies + ((copies == 1) ? " copy)" : " copies)"));
         p.setBounds(10, 70, 200, 20);
         add(p);
         JButton cancel = new JButton("cancel hold");
@@ -102,7 +98,7 @@ public class AccountSummaryItem extends JPanel {
             }
         });
         add(cancel);
-        if (pos_on_list == 0) {
+        if (pos_on_list == 0 && avail_copies > 0) {
             JButton checkout = new JButton("checkout");
             checkout.setBounds(220, 70, 100, 20);
             checkout.addActionListener(new ActionListener() {
