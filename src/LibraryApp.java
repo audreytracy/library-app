@@ -2,6 +2,8 @@
 import java.awt.*;
 import java.sql.SQLException;
 import javax.swing.*;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class LibraryApp {
 
@@ -9,21 +11,19 @@ public class LibraryApp {
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setSize(550, 550);
 
-        InputComponents outer = new InputComponents();
-        InputComponents.LoginPanel login = outer.new LoginPanel("Login");
-        InputComponents.LoginPanel create_acct = outer.new LoginPanel("Create");
+        
+        AccountPanel ap = new AccountPanel();
+        tabbedPane.addTab("Account", ap);
 
-        SQLQueries s = new SQLQueries();
+        SQLQueries s = SQLQueries.getInstance();
         try {
-            InputComponents.SearchPanel browse = outer.new SearchPanel(s);
+            // InputComponents.SearchPanel browse = outer.new SearchPanel(s);
+            SearchPanel browse = new SearchPanel(s);
             tabbedPane.addTab("Browse", browse);
 
-        } catch (SQLException sqle) { }
-
-        tabbedPane.addTab("Login", login);
-        tabbedPane.addTab("Create Account", create_acct);
-
+        } catch (SQLException sqle) {sqle.printStackTrace();}
         pane.add(tabbedPane, BorderLayout.CENTER);
+        
     }
 
     private static void createAndShowGUI() {
@@ -38,11 +38,30 @@ public class LibraryApp {
     }
 
     public static void main(String[] args) {
+
+
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try{
+                    cleanHolds();
+                }
+                catch(SQLException sqle){}
+            }
+        }, 0, 60000 * 10); // 60000 ms per minute, run every 10 minutes
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 createAndShowGUI();
             }
         });
+        
+    }
+    
+    public static void cleanHolds() throws SQLException{
+        SQLQueries s = SQLQueries.getInstance();
+        s.query("DELETE FROM holds WHERE hold_expire > CURRENT_TIMESTAMP;");
     }
 
 }

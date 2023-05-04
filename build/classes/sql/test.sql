@@ -4,6 +4,8 @@ DROP TABLE IF EXISTS holds CASCADE;
 DROP TABLE IF EXISTS borrowing_history CASCADE;
 DROP TABLE IF EXISTS book CASCADE;
 DROP TABLE IF EXISTS author CASCADE;
+DROP TABLE IF EXISTS book_list_data CASCADE;
+DROP TABLE IF EXISTS avail_copies_data CASCADE;
 
 CREATE TABLE account(
     account_id SERIAL PRIMARY KEY,
@@ -31,54 +33,97 @@ CREATE TABLE book(
 );
 
 CREATE TABLE book_inventory(
-    book_copy_id SERIAL PRIMARY KEY,
-    book_id INT NOT NULL,
-    date_added DATE, -- would probably ordinarily be DEFAULT CURRENT_DATE since its the date added to the library, but this system is assuming these books were added a while ago
-    FOREIGN KEY (book_id) REFERENCES book (book_id)
+    book_id INT PRIMARY KEY,
+    num_copies INT,
+    FOREIGN KEY (book_id) REFERENCES book(book_id)
 );
 
 CREATE TABLE holds(
     book_id INT,
     account_id INT, 
-    time_placed TIMESTAMP DEFAULT CURRENT_DATE, -- date and time someone placed the hold
+    time_placed TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- date and time someone placed the hold
     -- if your timestamp is the oldest, you're first on the holds list.
+    time_first_on_list TIMESTAMP,
+    hold_expire TIMESTAMP GENERATED ALWAYS AS (time_first_on_list + INTERVAL '10 days') STORED,
     PRIMARY KEY (book_id, account_id),
     FOREIGN KEY (book_id) REFERENCES book(book_id),
     FOREIGN KEY (account_id) REFERENCES account(account_id)
 );
 
+
+CREATE OR REPLACE FUNCTION log_hold_time()
+RETURNS TRIGGER
+LANGUAGE PLPGSQL
+AS
+$$
+BEGIN
+    IF NEW.time_placed = (SELECT MIN(time_placed) FROM holds WHERE book_id = NEW.book_id) THEN
+        UPDATE holds SET time_first_on_list = CURRENT_TIMESTAMP WHERE (account_id = NEW.account_id AND book_id = NEW.book_id);
+    ELSEIF OLD.time_placed = (SELECT MIN(time_placed) FROM holds WHERE book_id = OLD.book_id) THEN
+        UPDATE holds SET time_first_on_list = CURRENT_TIMESTAMP WHERE (book_id = OLD.book_id AND time_placed = (SELECT MIN(time_placed) FROM holds WHERE book_id = OLD.book_id and time_placed > OLD.time_placed));
+    END IF;
+    RETURN OLD;
+END;
+$$;
+
+CREATE TRIGGER log_hold
+    AFTER INSERT
+    ON holds
+    FOR EACH ROW
+    EXECUTE PROCEDURE log_hold_time();
+
+CREATE TRIGGER change_hold
+    BEFORE DELETE
+    ON holds
+    FOR EACH ROW
+    EXECUTE PROCEDURE log_hold_time();
+
 CREATE TABLE borrowing_history(
-    book_copy_id INT,
-    account_id INT, 
+    checkout_id SERIAL PRIMARY KEY,
+    book_id INT NOT NULL,
+    account_id INT NOT NULL, 
     date_checked_out DATE DEFAULT CURRENT_DATE,
     due_date DATE GENERATED ALWAYS AS (date_checked_out + INTERVAL '30 days') STORED,
     date_returned DATE, -- optional, is null until user returns book
-    PRIMARY KEY (book_copy_id, account_id)
+    FOREIGN KEY (book_id) REFERENCES book(book_id),
+    FOREIGN KEY (account_id) REFERENCES account(account_id)
 );
+
+CREATE VIEW book_list_data 
+AS SELECT book.*, fname, lname
+                    FROM book JOIN author
+                              ON book.author_id = author.author_id
+                              GROUP BY title, fname, lname, book.book_id, summary, pages, genre, book.author_id; 
+
+CREATE VIEW avail_copies_data 
+AS SELECT book_inventory.book_id, num_copies as total_copies, sum(CASE WHEN (borrowing_history.date_returned IS NULL AND borrowing_history.date_checked_out IS NOT NULL) THEN 1 ELSE 0 END) as in_use_copies
+                    FROM book_inventory LEFT JOIN borrowing_history
+                                        ON book_inventory.book_id = borrowing_history.book_id
+                                        GROUP BY book_inventory.book_id; 
 
 -- INSERT DATA:
 
 -- authors with books in library
 INSERT INTO author(fname, lname) VALUES
-('J.K.', 'Rowling'),
-('George', 'Orwell'),
-('Harper', 'Lee'),
-('Margaret', 'Atwood'),
-('Mark', 'Twain'),
-('F. Scott', 'Fitzgerald'),
-('Leo', 'Tolstoy'),
-('Ernest', 'Hemingway'),
-('Gabriel', 'García Márquez'),
-('Toni', 'Morrison'),
-('Kurt', 'Vonnegut'),
-('Ray', 'Bradbury'),
-('J.D.', 'Salinger'),
-('Chinua', 'Achebe'),
-('Stephen', 'King'),
-('Donna', 'Tartt'),
-('Angie', 'Thomas'),
-('Ernest', 'Cline'),
-('Sharon', 'Moalem');
+('J.K.', 'Rowling'), -- 1
+('George', 'Orwell'), -- 2
+('Harper', 'Lee'), -- 3
+('Margaret', 'Atwood'), -- 4
+('Mark', 'Twain'), -- 5
+('F. Scott', 'Fitzgerald'), -- 6
+('Leo', 'Tolstoy'), -- 7
+('Ernest', 'Hemingway'), -- 8
+('Gabriel', 'García Márquez'), -- 9
+('Toni', 'Morrison'), -- 10
+('Kurt', 'Vonnegut'), -- 11
+('Ray', 'Bradbury'), -- 12
+('J.D.', 'Salinger'), -- 13
+('Chinua', 'Achebe'), -- 14
+('Stephen', 'King'), -- 15
+('Donna', 'Tartt'), -- 16
+('Angie', 'Thomas'), -- 17
+('Ernest', 'Cline'), -- 18
+('Sharon', 'Moalem'); -- 19
 
 -- books in library
 INSERT INTO book(author_id, title, genre, summary, pages, publication_date) VALUES 
@@ -102,78 +147,98 @@ INSERT INTO book(author_id, title, genre, summary, pages, publication_date) VALU
 (17, 'The Hate U Give', 'Young Adult Fiction', 'The novel tells the story of Starr Carter, a 16-year-old black girl who witnesses the fatal shooting of her unarmed best friend by a white police officer.', 464, '2017-02-28'),
 (18, 'Ready Player One', 'Science Fiction', 'In 2045, the creator of a virtual reality world called the OASIS dies, leaving behind a series of puzzles that lead to his fortune.', 386, '2011-08-16'),
 (19, 'Survival of the Sickest', 'Nonfiction', 'A book about the surprising ways in which diseases have helped humans survive and evolve', 320, '2020-06-01');
-;
 
 -- book inventory
-INSERT INTO book_inventory(book_id, date_added) VALUES
-(1, '2001-09-15'), -- 1
-(1, '2001-09-14'), -- 2
-(1, '2001-09-15'), -- 3
-(2, '2010-05-08'), -- 4
-(3, '1995-12-01'), -- 5
-(4, '2003-10-11'), -- 6
-(5, '1989-07-22'), -- 7
-(6, '1997-03-20'), -- 8
-(7, '2005-08-18'), -- 9
-(8, '2011-11-13'), -- 10
-(9, '1975-06-09'), -- 11
-(10, '1999-02-01'), -- 12
-(11, '2008-04-03'), -- 13
-(12, '2015-09-30'), -- 14
-(13, '2006-12-24'), -- 15
-(14, '2014-03-15'), -- 16
-(15, '1990-11-11'), -- 17
-(16, '2002-06-07'), -- 18
-(17, '2017-10-05'), -- 19
-(18, '2019-06-18'), -- 20
-(1, '2003-02-19'), -- 21
-(2, '2015-09-12'), -- 22
-(3, '1999-11-30'), -- 23
-(4, '2012-03-01'), -- 24
-(5, '2008-09-05'), -- 25
-(6, '2018-01-15'), -- 26
-(7, '2020-02-29'), -- 27
-(8, '2014-08-01'), -- 28
-(9, '2000-05-12'), -- 29
-(10, '2013-11-25'), -- 30
-(11, '2007-07-07'), -- 31
-(19, '2020-10-10');
-
+INSERT INTO book_inventory(book_id, num_copies) VALUES
+(1, 3),
+(2, 4),
+(3, 1),
+(4, 4),
+(5, 5),
+(6, 7),
+(7, 2),
+(8, 1),
+(9, 1),
+(10, 1),
+(11, 1),
+(12, 3),
+(13, 2),
+(14, 2),
+(15, 2),
+(16, 2),
+(17, 3),
+(18, 4),
+(19, 1),
+(20, 2); --
 -- initial users
-INSERT INTO account (fname, lname, phone, pin, username) VALUES ('John', 'Doe', 1234567890, 1234, 'johndoe'),
+INSERT INTO account (fname, lname, phone, pin, username) VALUES
+('John', 'Doe', 1234567890, 1234, 'johndoe'),
 ('Jane', 'Doe', 9876543210, 5678, 'janedoe'),
 ('Bob', 'Smith', 5555555555, 2468, 'bobsmith');
 
 -- holds
-INSERT INTO holds (book_id, account_id, time_placed) 
-VALUES 
-(1, 1, '2018-06-24 15:30:45'), 
-(2, 1, '2019-08-12 11:20:10'), 
-(3, 1, '2017-05-07 19:45:30'), 
-(4, 2, '2017-05-07 19:45:30'), 
-(5, 2, '2016-12-31 23:59:59'), 
-(6, 2, '2022-01-01 12:00:00'), 
-(7, 2, '2018-11-22 06:30:15'), 
-(8, 3, '2021-07-15 14:10:25'), 
-(9, 3, '2017-08-04 09:45:30'), 
-(10, 3, '2023-02-14 18:20:40');
+INSERT INTO holds (book_id, account_id, time_placed) VALUES 
+(1, 1, '2023-05-03 15:30:45'),  -- all three copies in use
+(1, 2, '2023-05-02 15:30:45'), 
+(1, 3, '2023-05-01 15:30:45'), 
+(3, 1, '2023-05-02 11:20:10'),  -- copy in use
+(3, 3, '2023-05-03 19:45:30'), 
+(14, 2, '2023-05-03 19:45:30'),  -- 2 copies in use
+(15, 2, '2023-05-02 23:59:59'),  -- 2 copies in use
+(16, 2, '2023-05-03 12:00:00'),  -- 2 copies in use
+(19, 2, '2023-05-02 06:30:15'),  -- copy in use
+(20, 3, '2023-05-01 14:10:25'),  -- 2 copies in use
+(9, 3, '2023-05-03 09:45:30'),   -- copy in use
+(8, 3, '2022-05-02 18:20:40');   -- copy in use
 
 -- borrowing history
-INSERT INTO borrowing_history(book_copy_id, account_id, date_checked_out, date_returned) 
-VALUES
-(1,1,'2014-08-01', '2014-09-21'), -- overdue
+INSERT INTO borrowing_history(book_id, account_id, date_checked_out, date_returned) VALUES
+(1,1,'2014-08-01', '2014-09-21'), -- was overdue
+(1,1,'2023-03-08', NULL), -- not returned yet
+(1, 3, '2023-04-01', NULL), -- not returned yet
+(1,2,'2023-04-11', NULL), -- not returned yet (all copies of 1 in use)
 (5, 1, '2022-04-20', '2022-04-30'),
 (14, 2, '2021-07-12', '2021-07-19'),
-(23, 3, '2019-11-05', '2019-11-11'),
+(14, 2, '2023-04-12', NULL),
+(14, 2, '2023-05-02', NULL), -- both copies of 14 in use
+(20, 3, '2019-11-05', '2019-11-11'),
+(20, 2, '2022-11-05', '2019-11-11'),
+(20, 2, '2023-01-05', '2019-11-11'), -- both copies of 20 in use
 (10, 1, '2020-08-22', '2020-08-30'),
 (8, 2, '2018-05-15', '2018-05-21'),
-(16, 3, '2023-01-01', NULL), -- not returned yet
-(31, 1, '2017-02-14', '2017-02-21'),
+(11, 1, '2017-02-14', '2017-02-21'),
 (3, 2, '2018-11-10', '2018-11-18'),
-(29, 3, '2022-09-08', NULL), -- not returned yet
+(3, 1, '2023-03-21', NULL), -- not returned yet (copy of 3 in use)
+(19, 3, '2022-09-08', NULL), -- not returned yet (copy of 19 in use)
 (11, 1, '2016-12-01', '2017-01-27'), -- overdue
 (17, 2, '2020-03-20', '2020-03-28'),
-(1, 3, '2023-04-01', NULL), -- not returned yet
+(9, 2, '2020-03-20', NULL), -- copy of 9 in use
 (19, 1, '2017-06-10', '2017-06-16'),
-(26, 2, '2019-02-14', '2019-02-22'),
+(8, 1, '2023-05-02', NULL), -- copy of 8 in use
+(15, 1, '2023-04-30', NULL), 
+(15, 2, '2023-05-01', NULL), -- both copies of 15 in use
+(16, 2, '2019-02-14', '2019-02-22'),
+(16, 1, '2023-02-14', NULL),
+(16, 3, '2023-03-14', NULL), -- both copies of 16 in use
 (7, 3, '2021-10-12', NULL); -- not returned yet
+
+
+CREATE OR REPLACE FUNCTION get_hold_pos(a_id IN INTEGER, b_id IN INTEGER)
+RETURNS INTEGER
+LANGUAGE PLPGSQL
+AS
+$$
+BEGIN
+    RETURN (SELECT  SUM(CASE WHEN time_placed < (SELECT time_placed FROM holds WHERE book_id = b_id AND account_id = a_id) THEN 1 ELSE 0 END) FROM book JOIN holds ON book.book_id = holds.book_id WHERE book.book_id = b_id);
+END;
+$$;
+
+
+CREATE VIEW holds_data AS (SELECT holds.book_id, holds.account_id, holds.time_placed, num_copies, get_hold_pos(holds.account_id, holds.book_id) as hold_pos FROM holds JOIN book_inventory ON book_inventory.book_id = holds.book_id GROUP BY holds.book_id, holds.account_id, holds.time_placed, book_inventory.num_copies);
+
+
+SELECT * FROM holds_data WHERE account_id = 2;
+SELECT count(*) FROM holds WHERE account_id = 2;
+SELECT * FROM holds_data LEFT JOIN book ON holds_data.book_id = book.book_id LEFT JOIN author ON author.author_id = book.author_id WHERE account_id = 2;
+
+SELECT count(*) FROM borrowing_history WHERE account_id = 2 AND book_id = 4 AND date_returned IS NULL;

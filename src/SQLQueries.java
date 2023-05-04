@@ -12,8 +12,8 @@ import java.sql.SQLException;
 public class SQLQueries {
 
     private Statement stmt;
-    
-    public SQLQueries(){
+    private static final SQLQueries SQL = new SQLQueries();
+    private SQLQueries(){
         String url = "jdbc:postgresql://localhost:5432/";
         String user = "postgres";
         String password = "ahi7,$$";
@@ -31,11 +31,20 @@ public class SQLQueries {
             String line;
             StringBuilder sb = new StringBuilder();
             while ((line = reader.readLine()) != null) {
-                sb.append(line.split("--")[0].trim());
+                line = line.split("--")[0];
+                sb.append(line.split("--")[0] + " ");
+                if(line.equals("$$")){
+                    line = reader.readLine();
+                    sb.append(line.split("--")[0] + " ");
+                    do{
+                        line = reader.readLine();
+                        sb.append(line.split("--")[0] + " ");
+                    }
+                    while(!line.equals("$$;"));
+                }
                 if (line.endsWith(";")) {
                     stmt.execute(sb.toString());
                     sb = new StringBuilder();
-                    System.out.println("hsdiofsdfi");
                 }
             }
             this.stmt = stmt;
@@ -44,25 +53,16 @@ public class SQLQueries {
         catch (IOException | ClassNotFoundException | SQLException e) { e.printStackTrace(); }
     }
     
+    // Make SQLQueries singleton class
+    public static SQLQueries getInstance(){
+        return SQL;
+    }
+    
     public ResultSet query(String query) throws SQLException {
         return this.stmt.executeQuery(query);
     }
     
-    public ResultSet insert(String records) throws SQLException {
-        return this.stmt.executeQuery(records);
+    public void update(String insert) throws SQLException {
+        this.stmt.executeUpdate(insert);
     }
-    
-    
-    
-    public static void main(String[] args) {
-        SQLQueries s = new SQLQueries();
-        try{
-            s.query("SELECT * FROM account;");
-
-        }
-        catch(SQLException sqle){
-            System.out.println("sqlexception");
-        }
-    }
-
 }
