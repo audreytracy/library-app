@@ -64,7 +64,7 @@ public class AccountPanel extends JScrollPane {
                         ResultSet rs = s.query("SELECT count(*) FROM borrowing_history WHERE date_returned IS NULL AND account_id = " + user_id);
                         rs.next();
                         int checked_out = rs.getInt("count");
-                        rs = s.query("SELECT count(*) FROM borrowing_history WHERE date_returned IS NULL AND due_date > CURRENT_TIMESTAMP AND account_id = " + user_id);
+                        rs = s.query("SELECT count(*) FROM borrowing_history WHERE date_returned IS NULL AND due_date < CURRENT_TIMESTAMP AND account_id = " + user_id);
                         rs.next();
                         int overdue = rs.getInt("count");
                         rs = s.query("SELECT count(*) FROM holds WHERE account_id = " + user_id);

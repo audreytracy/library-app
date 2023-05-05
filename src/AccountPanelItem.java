@@ -49,14 +49,14 @@ public class AccountPanelItem extends JPanel {
         JLabel c = new JLabel("Checked out: " + checkout_date);
         c.setBounds(10, 50, 200, 20);
         add(c);
-        JLabel r = new JLabel("Returned:       " + ((return_date == null) ? "not returned" : return_date));
-        r.setBounds(10, 70, 200, 20);
-        add(r);
         if (return_date == null) {
+            JLabel r = new JLabel("Due:                " + due_date.toString().substring(0,10));
+            r.setBounds(10, 70, 200, 20);
+            add(r);
             // if overdue
             if (due_date.compareTo(Timestamp.from(Instant.now())) < 0) { // less than 0 means object time before argument (due date before current date)
                 JLabel overdue_warning = new JLabel("<html><h3 style = \"color:red\">OVERDUE</h3></html>");
-                overdue_warning.setBounds(250,40,100,20);
+                overdue_warning.setBounds(250, 40, 100, 20);
                 add(overdue_warning);
             }
             JButton return_book = new JButton("Return book");
@@ -75,6 +75,10 @@ public class AccountPanelItem extends JPanel {
                 }
             });
             add(return_book);
+        } else {
+            JLabel r = new JLabel("Returned:       " + return_date);
+            r.setBounds(10, 70, 200, 20);
+            add(r);
         }
     }
 

@@ -85,33 +85,26 @@ public class CheckoutHold extends JPanel {
                             String p = pin_field.getText();
                             String username = username_field.getText();
                             if (p.equals("****") || p.length() != 4 || !isInteger(p)) {
-                                throw new SQLException();
+                                throw new SQLException(); // login invalid.
                             }
                             int pin = Integer.parseInt(p);
-                            ResultSet user = q.query("SELECT account_id FROM account WHERE pin = " + pin + " AND username = '" + username + "';");
-                            user.next();
-                            int user_id = user.getInt("account_id");
-                            int num_holds_on_book = 0;
-                            boolean thrown = false;
-                            try {
-                                user = q.query("SELECT count(*) FROM holds WHERE book_id = " + id);
-                                user.next();
-                                num_holds_on_book = user.getInt("count");
-                                user = q.query("SELECT time_first_on_list FROM holds WHERE account_id = " + user_id + " AND book_id = " + id);
-                                user.next();
-                                boolean isFirst = user.getString("time_first_on_list") != null;
-                                if (num_holds_on_book > 0 && !isFirst) {
-                                    throw new SQLException();
+                            ResultSet rs = q.query("SELECT account_id FROM account WHERE pin = " + pin + " AND username = '" + username + "';");
+                            rs.next();
+                            int user_id = rs.getInt("account_id");
+                            // see if holds exist
+                            rs = q.query("SELECT * FROM avail_copies_data WHERE book_id = " + id);
+                            rs.next();
+                            int avail = rs.getInt("total_copies") - rs.getInt("in_use_copies");
+                            rs = q.query("SELECT count(*) FROM holds WHERE book_id = " + id);
+                            rs.next();
+                            boolean hasHolds = rs.getInt("count") > 0;
+                            if (hasHolds) {
+                                rs = q.query("SELECT hold_pos FROM holds_data WHERE account_id = " + user_id + " AND book_id = " + id);
+                                if (rs.next()){
+                                    if(rs.getInt("hold_pos")+1 > avail) throw new ImproperHoldPositionException();
                                 }
-                            } catch (SQLException s) {
-                                thrown = true;
-                                s.printStackTrace();
-                                warning = new JLabel("<html><h4 style=\"color:red;\">there are holds on this book</h4></html>");
-                                warning.setBounds(217, 130, 100, 20);
-                                CheckoutHold.this.add(warning);
-                                CheckoutHold.this.repaint();
+                                else throw new ImproperHoldPositionException();// if there are holds on the book and the user isn't any of them
                             }
-if(!thrown){
                             q.update("INSERT INTO borrowing_history (book_id, account_id) VALUES (" + id + ", " + user_id + ");");
                             CheckoutHold.this.remove(checkout);
                             JLabel success = new JLabel("<html><h4 style = \"color:green\">checked out</h4></html>");
@@ -122,16 +115,22 @@ if(!thrown){
                             } catch (SQLException sqle) {
                                 sqle.printStackTrace();
                             }
-                            CheckoutHold.this.repaint();}
+                            CheckoutHold.this.repaint();
+                        } catch (ImproperHoldPositionException ihpe) {
+                            warning = new JLabel("<html><h4 style=\"color:red;\">there are holds on this book</h4></html>");
+                            warning.setBounds(210, 135, 100, 30);
+                            CheckoutHold.this.add(warning);
+                            CheckoutHold.this.repaint();
                         } catch (SQLException sqle) {
+                            sqle.printStackTrace();
                             warning = new JLabel("<html><h4 style=\"color:red;\">invalid login</h4></html>");
                             warning.setBounds(217, 130, 100, 20);
                             CheckoutHold.this.add(warning);
                             CheckoutHold.this.repaint();
                         }
-
                     }
-                });
+                }
+                );
                 add(checkout);
             } else {
                 JButton place_hold = new JButton("Place Hold");
@@ -168,13 +167,13 @@ if(!thrown){
                             } catch (IllegalStateException ise) {
                                 CheckoutHold.this.remove(place_hold);
                                 warning = new JLabel("<html><h4 style = \"color:red\">Cannot place hold, you have all copies checked out</h4></html>");
-                                warning.setBounds(150, 125, 150, 50);
+                                warning.setBounds(195, 130, 120, 50);
                                 CheckoutHold.this.add(warning);
                                 CheckoutHold.this.repaint();
                             } catch (SQLException sqle) { // exception thrown if unique PK constraint violated (already have hold on book)
                                 CheckoutHold.this.remove(place_hold);
                                 warning = new JLabel("<html><h4 style = \"color:red\">You already have a hold on this book</h4></html>");
-                                warning.setBounds(170, 125, 220, 20);
+                                warning.setBounds(195, 130, 120, 30);
                                 CheckoutHold.this.add(warning);
                                 CheckoutHold.this.repaint();
                             }
