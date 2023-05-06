@@ -112,9 +112,7 @@ public class AccountPanel extends JScrollPane {
                         }
                         repaint();
                     }
-                } catch (SQLException sqle) {
-                    sqle.printStackTrace();
-                }
+                } catch (SQLException sqle) {}
             }
         });
 
@@ -172,7 +170,6 @@ public class AccountPanel extends JScrollPane {
                     comboBox.selectWithKeyChar('s');
                     repaint();
                 } catch (SQLException sqle) {
-                    sqle.printStackTrace();
                     pane.remove(warning);
                     warning = new JLabel("<html><h4 style=\"color:red;\">invalid login</h4></html>");
                     warning.setBounds(50, 65, 100, 20);

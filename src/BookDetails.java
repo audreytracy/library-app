@@ -37,7 +37,7 @@ public class BookDetails extends JPanel {
                 add(details);
             }
         }
-        catch(SQLException sqle){sqle.printStackTrace();}
+        catch(SQLException sqle){}
 
         
         

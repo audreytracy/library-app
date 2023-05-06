@@ -147,7 +147,7 @@ INSERT INTO book_inventory(book_id, num_copies) VALUES
 (1, 3),
 (2, 4),
 (3, 1),
-(4, 4),
+(4, 1),
 (5, 5),
 (6, 7),
 (7, 2),

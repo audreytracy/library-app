@@ -51,8 +51,8 @@ public class SQLQueries {
             }
             this.stmt = stmt;
         }
-        catch (FileNotFoundException e) { e.printStackTrace(); } 
-        catch (IOException | ClassNotFoundException | SQLException e) { e.printStackTrace(); }
+        catch (FileNotFoundException e) {} 
+        catch (IOException | ClassNotFoundException | SQLException e) {}
     }
     
     // Make SQLQueries singleton class

@@ -81,6 +81,7 @@ public class CheckoutHold extends JPanel {
                 checkout.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
+                        remove(warning);
                         try {
                             String p = pin_field.getText();
                             String username = username_field.getText();
@@ -112,9 +113,7 @@ public class CheckoutHold extends JPanel {
                             CheckoutHold.this.add(success);
                             try {
                                 q.update("DELETE FROM holds WHERE book_id = " + id + " AND account_id = " + user_id); // remove hold once book checked out, if hold exists
-                            } catch (SQLException sqle) {
-                                sqle.printStackTrace();
-                            }
+                            } catch (SQLException sqle) {}
                             CheckoutHold.this.repaint();
                         } catch (ImproperHoldPositionException ihpe) {
                             warning = new JLabel("<html><h4 style=\"color:red;\">there are holds on this book</h4></html>");
@@ -122,7 +121,6 @@ public class CheckoutHold extends JPanel {
                             CheckoutHold.this.add(warning);
                             CheckoutHold.this.repaint();
                         } catch (SQLException sqle) {
-                            sqle.printStackTrace();
                             warning = new JLabel("<html><h4 style=\"color:red;\">invalid login</h4></html>");
                             warning.setBounds(217, 130, 100, 20);
                             CheckoutHold.this.add(warning);
@@ -138,6 +136,7 @@ public class CheckoutHold extends JPanel {
                 place_hold.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
+                        remove(warning);
                         try {
                             String p = pin_field.getText();
                             String username = username_field.getText();
@@ -188,9 +187,7 @@ public class CheckoutHold extends JPanel {
                 add(place_hold);
             }
             add(l);
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-        }
+        } catch (SQLException sqle) {}
     }
 
     @Override

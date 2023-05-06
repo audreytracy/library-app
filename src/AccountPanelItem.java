@@ -69,9 +69,7 @@ public class AccountPanelItem extends JPanel {
                         s.update("UPDATE borrowing_history SET date_returned = CURRENT_DATE WHERE checkout_id = " + checkout_id);
                         AccountPanel parent = (AccountPanel) SwingUtilities.getAncestorOfClass(JScrollPane.class, AccountPanelItem.this);
                         parent.comboBox.selectWithKeyChar('c');
-                    } catch (SQLException sqle) {
-                        sqle.printStackTrace();
-                    }
+                    } catch (SQLException sqle) {}
                 }
             });
             add(return_book);
@@ -107,9 +105,7 @@ public class AccountPanelItem extends JPanel {
                     s.update("DELETE FROM holds WHERE book_id = " + book_id + " AND account_id = " + user_id + ";");
                     AccountPanel parent = (AccountPanel) SwingUtilities.getAncestorOfClass(JScrollPane.class, AccountPanelItem.this);
                     parent.comboBox.selectWithKeyChar('m');
-                } catch (SQLException sqle) {
-                    sqle.printStackTrace();
-                }
+                } catch (SQLException sqle) {}
             }
         });
         add(cancel);
