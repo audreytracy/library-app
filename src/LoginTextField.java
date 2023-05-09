@@ -7,7 +7,7 @@ import javax.swing.JPasswordField;
 
 
 /**
- *
+ * LoginTextField allows for an HTML-esque 'placeholder' in the text box that is greyed out and disappears on user click
  * @author Audrey
  */
 public class LoginTextField extends JPasswordField {

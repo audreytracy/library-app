@@ -14,7 +14,7 @@ import javax.swing.JTextField;
 /**
  * SearchPanel is a JScrollPane that displays the library's books and provides basic search filtering
  * capabilities (search by title, author last name, genre)
- * Search bar input is passed into a PreparedStatement to protect agains SQL injection
+ * Search bar input is passed into a PreparedStatement to protect against SQL injection
  * @author Audrey
  */
 public class SearchPanel extends JScrollPane {

@@ -5,6 +5,10 @@ import javax.swing.*;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * Main class, handles GUI display and holds cleaning (see TimerTask, sweeps for expired holds every hour)
+ * @author Audrey
+ */
 public class LibraryApp {
 
     public void addComponentToPane(Container pane) {

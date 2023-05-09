@@ -10,6 +10,11 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 
+/**
+ * SQLQueries is a singleton class (new instances would make program try and connect again 
+ * while db is already in use). Handles db connection, queries, and updates
+ * @author Audrey
+ */
 public class SQLQueries {
 
     private Statement stmt;
