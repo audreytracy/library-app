@@ -89,7 +89,7 @@ public class CheckoutHold extends JPanel {
                                 throw new SQLException(); // login invalid.
                             }
                             int pin = Integer.parseInt(p);
-                            ResultSet rs = q.query("SELECT account_id FROM account WHERE pin = " + pin + " AND username = '" + username + "';");
+                            ResultSet rs = q.preparedQuery("SELECT account_id FROM account WHERE pin = ? AND username = ?;", pin, username);
                             rs.next();
                             int user_id = rs.getInt("account_id");
                             // see if holds exist
