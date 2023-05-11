@@ -1,5 +1,5 @@
 # library-app
-- [sql file](https://github.com/audreytracy/library-app/src/tree/master/sql/test.sql) used for setting up database.  
+- [sql file](https://github.com/audreytracy/library-app/blob/master/src/sql/test.sql) used for setting up database.  
 - initial users of app (currenly no ability to add users)
     ```
     INSERT INTO account (pin, username) VALUES
