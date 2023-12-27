@@ -9,3 +9,4 @@
       (2468, 'bobsmith'),
       (1111, 'demoacct');
     ```
+- see [project PDF](https://github.com/audreytracy/library-app/blob/master/CSCI%20366%20Final%20Project.pdf) for an overview of the database design and implementation
