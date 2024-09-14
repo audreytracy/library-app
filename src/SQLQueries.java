@@ -21,9 +21,9 @@ public class SQLQueries {
     Connection con;
     private static final SQLQueries SQL = new SQLQueries();
     private SQLQueries(){
-        String url = "jdbc:postgresql://localhost:5432/";
-        String user = "postgres";
-        String password = "ahi7,$$";
+        String url = "jdbc:postgresql://localhost:5432/"; // change port as needed
+        String user = ""; // enter username
+        String password = ""; // enter password
         String filePath = new File("").getAbsolutePath()+"\\src\\sql\\test.sql";
         try {
             Class.forName("org.postgresql.Driver");
