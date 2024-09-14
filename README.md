@@ -88,7 +88,7 @@ View book summary & see option to place hold or checkout book:
     https://github.com/audreytracy/library-app.git
     ```
 - Open in NetBeans
-- Add your database login credentials to [SQLQueries.java](https://github.com/audreytracy/library-app/blob/master/src/SQLQueries.java) on lines [25 (username)](https://github.com/audreytracy/library-app/blob/15f8295902a1099d6b817b74badaeb3d59804fb9/src/SQLQueries.java#L25) and [26 (password)](https://github.com/audreytracy/library-app/blob/15f8295902a1099d6b817b74badaeb3d59804fb9/src/SQLQueries.java#L26)
+- Add your database login credentials to [SQLQueries.java](https://github.com/audreytracy/library-app/blob/master/src/SQLQueries.java) on lines [25 (username)](https://github.com/audreytracy/library-app/blob/f55d9b0a9c300aae97aafc42cd1c1fa33dcedc2d/src/SQLQueries.java#L25) and [26 (password)](https://github.com/audreytracy/library-app/blob/f55d9b0a9c300aae97aafc42cd1c1fa33dcedc2d/src/SQLQueries.java#L26)
 - Run  
 
 ## Database Design
