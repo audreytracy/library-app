@@ -62,6 +62,13 @@ This application provides a user interface for manipulating a SQL database.
 
 ### Features
 
+Filter search results by author last name, book title, or genre.  
+
+![image](https://github.com/user-attachments/assets/922e0b89-447c-4003-935c-a7eb412a8d65)
+
+View book summary & see option to place hold or checkout book:  
+
+![image](https://github.com/user-attachments/assets/3dbdfb10-71c4-4c56-9755-76be6a23e572)
 
 
 
