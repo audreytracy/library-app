@@ -1,19 +1,4 @@
-# library-app
-- [sql file](https://github.com/audreytracy/library-app/blob/master/src/sql/test.sql) used for setting up database.
-- make sure you have PostgreSQL server installed on your device. Edit [SQLQueries.java](https://github.com/audreytracy/library-app/blob/master/src/SQLQueries.java) to set up your account's details (especially lines 25-26 where postrgres username & password are defined)
-- initial users of app (currenly no ability to add users)
-    ```
-    INSERT INTO account (pin, username) VALUES
-      (1234, 'johndoe'),
-      (5678, 'janedoe'),
-      (2468, 'bobsmith'),
-      (1111, 'demoacct');
-    ```
-- see [project PDF](https://github.com/audreytracy/library-app/blob/master/CSCI%20366%20Final%20Project.pdf) for an overview of the database design and implementation
-
 <a id="top"></a>
-
-# Estimation Assistant Web Application
 
 <div align="center">
     <h2 align="center">Library Database Management Application</h2>
@@ -39,7 +24,6 @@
       </ul>
     <li><a href="#database-design">Database Design</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributors">Contributors</a></li>
   </ol>
 </details>
 
@@ -48,11 +32,11 @@
 
 ### Purpose
 
-This project was the final project for my database class. A large part of the project was database design & SQL implementation of this design. After the 
+This project was the final project for my database class. A large part of the project was database design & SQL implementation of this design (see [sql file](https://github.com/audreytracy/library-app/blob/master/src/sql/test.sql) used for setting up database). A SQL trigger function is used to update a user's position on holds list when new hold is placed or when hold is removed (faster & more efficient than making a Java function to do this). Prepared statements are used for ease of reuse & for improved security against SQL injection when compared to string concatenation. The rest of the application is an interface for the user to interact with the database.
 
 ### Product Description
 
-This application provides a user interface for manipulating a SQL database. 
+This application provides a user interface for manipulating a SQL database. Users may check out books, place holds on unavailable books, search for books, and view their own checkout & hold history. 
 
 ### Built With
 
@@ -62,6 +46,8 @@ This application provides a user interface for manipulating a SQL database.
 
 ### Features
 
+*  see [project PDF](https://github.com/audreytracy/library-app/blob/master/CSCI%20366%20Final%20Project.pdf) for an overview of the database design and implementation
+
 Filter search results by author last name, book title, or genre.  
 
 ![image](https://github.com/user-attachments/assets/922e0b89-447c-4003-935c-a7eb412a8d65)
@@ -69,7 +55,6 @@ Filter search results by author last name, book title, or genre.
 View book summary & see option to place hold or checkout book:  
 
 ![image](https://github.com/user-attachments/assets/3dbdfb10-71c4-4c56-9755-76be6a23e572)
-
 
 
 ## Setup
@@ -83,13 +68,21 @@ View book summary & see option to place hold or checkout book:
 
 ### Setup Steps
 
-- Clone this repository locally using 
+*  Clone this repository locally using 
     ```sh
     https://github.com/audreytracy/library-app.git
     ```
-- Open in NetBeans
-- Add your database login credentials to [SQLQueries.java](https://github.com/audreytracy/library-app/blob/master/src/SQLQueries.java) on lines [25 (username)](https://github.com/audreytracy/library-app/blob/f55d9b0a9c300aae97aafc42cd1c1fa33dcedc2d/src/SQLQueries.java#L25) and [26 (password)](https://github.com/audreytracy/library-app/blob/f55d9b0a9c300aae97aafc42cd1c1fa33dcedc2d/src/SQLQueries.java#L26)
-- Run  
+*  Open in NetBeans
+*  Add your database login credentials to [SQLQueries.java](https://github.com/audreytracy/library-app/blob/master/src/SQLQueries.java) on lines [25 (username)](https://github.com/audreytracy/library-app/blob/f55d9b0a9c300aae97aafc42cd1c1fa33dcedc2d/src/SQLQueries.java#L25) and [26 (password)](https://github.com/audreytracy/library-app/blob/f55d9b0a9c300aae97aafc42cd1c1fa33dcedc2d/src/SQLQueries.java#L26)
+*  Run
+    - initial users of app (currenly no ability to add users)
+        ```
+        INSERT INTO account (pin, username) VALUES
+          (1234, 'johndoe'),
+          (5678, 'janedoe'),
+          (2468, 'bobsmith'),
+          (1111, 'demoacct');
+        ```
 
 ## Database Design
 
@@ -106,7 +99,7 @@ Some features that would be useful to add in the future:
 - [ ] Further modularization of code
 - [ ] Addition of an admin account type
     - [ ] Ability for admin to add or remove books from system
-- [ ] Password security was not the focus of this application, so passwords are stored as plaintext. That would be something to change in this app's future  
+- [ ] Password security was not the focus of this application, so passwords are stored as plaintext. Adding a simple hashing algorithm would be a large improvement.
 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
