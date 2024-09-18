@@ -64,7 +64,7 @@ View book summary & see option to place hold or checkout book:
 - PostgreSQL Server  
 - Java  
 - NetBeans IDE  
-- JDBC bin file added to classpath  
+- JDBC driver added to classpath  
 
 ### Setup Steps
 
